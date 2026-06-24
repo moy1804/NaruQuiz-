@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shinobi Trial — Quiz Naruto</title>
+<style>
+  :root{
+    --ink:#0d0f14;
+    --panel:#161a22;
+    --panel-2:#1d2230;
+    --orange:#ff7a1a;
+    --orange-deep:#d4500a;
+    --red:#b8252c;
+    --paper:#f3e9d2;
+    --gold:#e8b04b;
+    --text:#eee8da;
+    --dim:#9aa0ad;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,122,26,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(184,37,44,0.10), transparent 45%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Yu Gothic','Hiragino Sans',"Segoe UI",sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  @font-face{
+    font-family:'SealFont';
+    src:local('Georgia');
+  }
+  .scroll{
+    width:100%;
+    max-width:640px;
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid rgba(232,176,75,0.18);
+    border-radius:18px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.03);
+    overflow:hidden;
+    position:relative;
+  }
+  .scroll::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;height:5px;
+    background:linear-gradient(90deg,var(--orange),var(--red),var(--orange));
+  }
+  header{
+    padding:28px 30px 18px;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .seal{
+    width:42px;height:42px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--orange), var(--orange-deep) 70%);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:#1a0a02;font-size:18px;
+    box-shadow:0 0 0 3px rgba(232,176,75,0.25), 0 6px 16px rgba(255,122,26,0.35);
+  }
+  .brand h1{
+    font-size:19px;
+    margin:0;
+    letter-spacing:0.5px;
+    font-weight:700;
+  }
+  .brand .sub{
+    font-size:11px;
+    color:var(--dim);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    margin-top:2px;
+  }
+  .rank{
+    font-size:11px;
+    color:var(--gold);
+    border:1px solid rgba(232,176,75,0.35);
+    padding:5px 10px;
+    border-radius:999px;
+    letter-spacing:0.5px;
+    white-space:nowrap;
+  }
+
+  main{padding:30px;}
+
+  /* ----- INTRO PANEL ----- */
+  .intro p{
+    color:var(--dim);
+    line-height:1.6;
+    font-size:14.5px;
+    margin:0 0 18px;
+  }
+  .rules{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .rule-card{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:12px;
+    padding:14px;
+  }
+  .rule-card .num{
+    color:var(--orange);
+    font-size:22px;
+    font-weight:800;
+    display:block;
+  }
+  .rule-card .label{
+    font-size:12px;
+    color:var(--dim);
+    margin-top:2px;
+  }
+  button.cta{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,var(--orange),var(--orange-deep));
+    color:#1a0a02;
+    font-weight:800;
+    font-size:15.5px;
+    letter-spacing:0.3px;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 10px 24px -8px rgba(255,122,26,0.5);
+  }
+  button.cta:hover{transform:translateY(-2px);}
+  button.cta:focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
+  button.cta:active{transform:translateY(0);}
+
+  /* ----- GAME PANEL ----- */
+  .hidden{display:none !important;}
+
+  .hud{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+    font-size:12.5px;
+    color:var(--dim);
+  }
+  .hud .pill{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.07);
+    padding:5px 11px;
+    border-radius:999px;
+  }
+  .progressbar{
+    height:6px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.06);
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .progressbar > div{
+    height:100%;
+    background:linear-gradient(90deg,var(--orange),var(--gold));
+    width:0%;
+    transition:width .3s ease;
+  }
+  .qtext{
+    font-size:18px;
+    font-weight:700;
+    line-height:1.45;
+    margin-bottom:20px;
+  }
+  .options{
+    display:grid;
+    gap:10px;
+  }
+  .opt{
+    text-align:left;
+    padding:14px 16px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.025);
+    color:var(--text);
+    font-size:14.5px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .opt:hover{border-color:rgba(255,122,26,0.4); background:rgba(255,122,26,0.06);}
+  .opt:focus-visible{outline:3px solid var(--gold); outline-offset:1px;}
+  .opt.correct{
+    border-color:#3fa66a;
+    background:rgba(63,166,106,0.15);
+  }
+  .opt.wrong{
+    border-color:var(--red);
+    background:rgba(184,37,44,0.18);
+  }
+  .opt[disabled]{cursor:default;}
+
+  .feedback{
+    min-height:20px;
+    font-size:13px;
+    margin-top:14px;
+    color:var(--dim);
+  }
+
+  /* ----- RESULT PANEL ----- */
+  .result{
+    text-align:center;
+  }
+  .result .badge{
+    font-size:46px;
+    margin-bottom:6px;
+  }
+  .result h2{
+    margin:6px 0 4px;
+    font-size:24px;
+  }
+  .result p.tagline{
+    color:var(--dim);
+    margin:0 0 22px;
+    font-size:14px;
+  }
+  .scorebox{
+    display:flex;
+    justify-content:center;
+    gap:24px;
+    margin-bottom:26px;
+  }
+  .scorebox .item{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.07);
+    border-radius:12px;
+    padding:14px 22px;
+    min-width:90px;
+  }
+  .scorebox .item b{
+    display:block;
+    font-size:24px;
+    color:var(--gold);
+  }
+  .scorebox .item span{
+    font-size:11px;
+    color:var(--dim);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  .win h2{color:#3fa66a;}
+  .lose h2{color:var(--red);}
+
+  footer{
+    padding:14px 30px 22px;
+    text-align:center;
+    font-size:11px;
+    color:#5a5f6c;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+  @media (max-width:480px){
+    .rules{grid-template-columns:1fr 1fr;}
+    main{padding:22px;}
+    header{padding:22px 22px 16px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="scroll">
+  <header>
+    <div class="brand">
+      <div class="seal">忍</div>
+      <div>
+        <h1>Shinobi Trial</h1>
+        <div class="sub">Épreuve de connaissance Naruto</div>
+      </div>
+    </div>
+    <div class="rank" id="rankBadge">Genin</div>
+  </header>
+
+  <main>
+
+    <!-- INTRO -->
+    <section id="intro" class="intro">
+      <p>Le Conseil des Cinq Nations a préparé une épreuve. 200 questions dorment dans les archives — l'examinateur en tire 15 au hasard pour toi. Réponds correctement à <b>9 ou plus</b> et tu obtiens ton grade. En dessous, tu retournes t'entraîner.</p>
+      <div class="rules">
+        <div class="rule-card"><span class="num">15</span><span class="label">questions posées</span></div>
+        <div class="rule-card"><span class="num">9+</span><span class="label">bonnes réponses pour réussir</span></div>
+        <div class="rule-card"><span class="num">200</span><span class="label">questions dans la banque</span></div>
+        <div class="rule-card"><span class="num">∞</span><span class="label">tentatives autorisées</span></div>
+      </div>
+      <button class="cta" id="startBtn">Commencer l'épreuve</button>
+    </section>
+
+    <!-- GAME -->
+    <section id="game" class="hidden">
+      <div class="hud">
+        <span class="pill" id="qIndex">Question 1 / 15</span>
+        <span class="pill" id="scorePill">Score : 0</span>
+      </div>
+      <div class="progressbar"><div id="progressFill"></div></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </section>
+
+    <!-- RESULT -->
+    <section id="result" class="hidden result">
+      <div class="badge" id="resultBadge"></div>
+      <h2 id="resultTitle"></h2>
+      <p class="tagline" id="resultTagline"></p>
+      <div class="scorebox">
+        <div class="item"><b id="finalCorrect">0</b><span>Correctes</span></div>
+        <div class="item"><b id="finalTotal">15</b><span>Posées</span></div>
+      </div>
+      <button class="cta" id="retryBtn">Retenter l'épreuve</button>
+    </section>
+
+  </main>
+
+  <footer>200 questions · sélection aléatoire à chaque tentative</footer>
+</div>
+
+<script>
+const QUESTIONS = [
+["Quel est le nom complet du clan de Naruto par son père ?","Uzumaki","Senju","Uchiha","Hyûga",0],
+["Qui est le père de Naruto ?","Minato Namikaze","Hiruzen Sarutobi","Jiraiya","Obito Uchiha",0],
+["Qui est la mère de Naruto ?","Kushina Uzumaki","Tsunade","Mikoto Uchiha","Mei Terumî",0],
+["De quel village Naruto est-il originaire ?","Konoha","Suna","Kiri","Iwa",0],
+["Quel démon est scellé en Naruto ?","Kyûbi (Renard à neuf queues)","Shukaku","Hachibi","Nibi",0],
+["Qui est le rival de toujours de Naruto ?","Sasuke Uchiha","Kiba Inuzuka","Shikamaru Nara","Rock Lee",0],
+["Quel est le surnom de Naruto donné par Jiraiya ?","Le Ninja le plus imprévisible de Konoha","Le Dieu de la Foudre","L'Enfant Prodige","Le Croc Blanc",0],
+["Quelle technique signature Naruto utilise-t-il le plus ?","Multiclonage (Kage Bunshin)","Sharingan","Byakugan","Rasengan",3],
+["Qui a enseigné le Rasengan à Naruto ?","Jiraiya","Kakashi","Minato","Tsunade",1],
+["Quel plat préféré de Naruto revient souvent dans la série ?","Ramen Ichiraku","Onigiri","Dango","Yakisoba",0],
+["Quel est le surnom de Sasuke Uchiha ?","Le dernier des Uchiha","Le Croc Blanc","Le Foudre Jaune","Le Cinquième Kazekage",0],
+["Quel kekkei genkai possède le clan Uchiha ?","Sharingan","Byakugan","Rinnegan","Mokuton",0],
+["Qui a massacré le clan Uchiha ?","Itachi Uchiha","Madara Uchiha","Orochimaru","Danzô Shimura",0],
+["Quel est le frère aîné de Sasuke ?","Itachi","Obito","Shisui","Fugaku",0],
+["Vers qui Sasuke part-il pour devenir plus fort, trahissant Konoha ?","Orochimaru","Kabuto","Madara","Pain",0],
+["Quelle équipe forme Sasuke, Naruto et Sakura sous quel sensei ?","Équipe 7, sous Kakashi","Équipe 10, sous Asuma","Équipe 8, sous Kurenai","Équipe Gai","",1],
+["Quel est l'objectif initial de Sasuke après la mort de son clan ?","Tuer Itachi","Devenir Hokage","Réveiller le Rinnegan","Diriger Konoha",0],
+["Quel œil légendaire Sasuke obtient-il finalement, en plus du Sharingan ?","Rinnegan","Byakugan","Jôgan","Tenseigan",0],
+["Quelle est la spécialité de Sakura Haruno en combat ?","Ninjutsu médical","Manipulation des ombres","Taijutsu pur","Maîtrise des insectes",0],
+["Qui forme Sakura comme apprentie ?","Tsunade","Chiyo","Shizune","Ino",0],
+["Quelle force surhumaine Sakura développe-t-elle grâce à son entraînement ?","Une force physique amplifiée par le chakra","La téléportation","Le contrôle du sable","La transformation animale",0],
+["Quel surnom porte le clan de Sakura ? (aucun clan particulier, mais...)","Elle n'appartient à aucun grand clan","Clan Haruno illustre","Clan royal de Konoha","Descendante de Tsunade",0],
+["Qui est le sensei de l'équipe 7 ?","Kakashi Hatake","Asuma Sarutobi","Kurenai Yûhi","Gai Maito",0],
+["Quel œil légendaire possède Kakashi ?","Le Sharingan (œil gauche)","Le Byakugan","Le Rinnegan","Le Jôgan",0],
+["Qui a donné son Sharingan à Kakashi ?","Obito Uchiha","Itachi Uchiha","Sasuke Uchiha","Madara Uchiha",0],
+["Quel est le surnom de Kakashi ?","Le Ninja qui copie","Le Croc Jaune","Le Dieu Shinobi","L'Éclair de Konoha",0],
+["Qui était le coéquipier de Kakashi dans sa jeunesse, en plus d'Obito ?","Rin Nohara","Kushina Uzumaki","Mikoto Uchiha","Yûgao Uzuki",0],
+["Quel est le nom du père de Kakashi ?","Sakumo Hatake","Sagiri Hatake","Kakuzu","Hiruzen",0],
+["Qui est le quatrième Hokage ?","Minato Namikaze","Hiruzen Sarutobi","Tobirama Senju","Tsunade",0],
+["Quel jutsu Minato a-t-il inventé, qui lui donne son surnom ?","Le Hiraishin (technique de l'Éclair Volant)","Le Rasengan","Le Chidori","Le Mokuton",0],
+["Qui est le troisième Hokage ?","Hiruzen Sarutobi","Tobirama Senju","Hashirama Senju","Danzô",0],
+["Quel est le surnom du troisième Hokage ?","Le Dieu des Shinobi","Le Croc Blanc","L'Éclair Jaune","Le Sage des Six Voies",0],
+["Qui est la cinquième Hokage ?","Tsunade","Mei Terumî","Sakura Haruno","Konan",0],
+["Quelle est la spécialité légendaire de Tsunade ?","Le ninjutsu médical","Le Sharingan","La manipulation du sable","Le contrôle des insectes",0],
+["Qui sont les légendaires Sannin avec Tsunade ?","Jiraiya et Orochimaru","Hiruzen et Danzô","Kakashi et Gai","Minato et Kushina",0],
+["Quel est le surnom de Jiraiya ?","Le Sage Pervers","Le Croc Blanc","Le Démon de Konoha","L'Éclair Jaune",0],
+["Quel animal Jiraiya peut-il invoquer ?","Les crapauds","Les serpents","Les limaces","Les renards",0],
+["Qui tue Jiraiya ?","Pain (Nagato)","Orochimaru","Kabuto","Obito",0],
+["Quel animal Orochimaru invoque-t-il ?","Les serpents","Les crapauds","Les limaces","Les aigles",0],
+["Quelle expérience macabre Orochimaru cherche-t-il à réaliser sur ses propres disciples ?","Voler leur corps pour devenir immortel","Créer une armée de clones","Fusionner avec le Kyûbi","Réveiller le Rinnegan",0],
+["Quel village Orochimaru a-t-il aidé à fonder après avoir quitté Konoha ?","Otogakure (Village du Son)","Kusagakure","Amegakure","Takigakure",0],
+["Qui est le rival d'enfance d'Orochimaru, avec Jiraiya, sous Hiruzen ?","Tsunade","Mei Terumî","Kushina","Chiyo",0],
+["Quel village dirige Gaara ?","Sunagakure (Village du Sable)","Konohagakure","Kirigakure","Iwagakure",0],
+["Quel démon était scellé en Gaara ?","Shukaku (le Tanuki à une queue)","Kyûbi","Nibi","Sanbi",0],
+["Qui est le père de Gaara ?","Le Quatrième Kazekage, Rasa","Le Troisième Kazekage","Le Cinquième Kazekage","Ebizô",0],
+["Quel élément Gaara maîtrise-t-il principalement ?","Le sable","L'eau","Le feu","La foudre",0],
+["Quels sont les frères et sœurs de Gaara ?","Kankurô et Temari","Konohamaru et Hanabi","Kiba et Hana","Lee et Neji",0],
+["Quel village dirige le clan Hyûga ?","Konoha","Suna","Kiri","Kumo",0],
+["Quel kekkei genkai possède le clan Hyûga ?","Le Byakugan","Le Sharingan","Le Rinnegan","Le Mokuton",0],
+["Qui est le cousin de Hinata, sacrifié lors de la guerre ?","Neji Hyûga","Kiba Inuzuka","Shino Aburame","Konohamaru",0],
+["Qui Hinata épouse-t-elle finalement ?","Naruto Uzumaki","Kiba Inuzuka","Sasuke Uchiha","Shino Aburame",0],
+["Quel est le surnom de Rock Lee ?","La Bête Verte Junior de Konoha","Le Croc Blanc","Le Démon du Sable","L'Aigle de Suna",0],
+["Qui est le sensei de Rock Lee, Neji et Tenten ?","Gai Maito","Kakashi Hatake","Asuma Sarutobi","Kurenai Yûhi",0],
+["Quel handicap Rock Lee surmonte-t-il en se concentrant sur le taijutsu ?","Son incapacité à utiliser le ninjutsu et le genjutsu","Sa cécité","Sa surdité","Son manque de chakra",0],
+["Quelle porte interdite Gai ouvre-t-il lors de son combat final contre Madara ?","La huitième porte","La sixième porte","La cinquième porte","La septième porte",0],
+["Qui dirige le clan Nara, connu pour la manipulation des ombres ?","Shikaku puis Shikamaru","Choza puis Chôji","Inoichi puis Ino","Asuma",0],
+["Quel est le QI exceptionnel attribué à Shikamaru ?","Plus de 200","150","180","220",0],
+["Quel trio classique forme Shikamaru, Ino et Chôji ?","L'Ino-Shika-Chô","Le Trio des Sables","L'Équipe Taijutsu","Les Trois Sannin",0],
+["Qui Shikamaru épouse-t-il ?","Temari","Ino","Tenten","Sakura",0],
+["Quelle technique signature utilise le clan Akimichi ?","L'expansion corporelle","Le contrôle des ombres","La télépathie","Le contrôle des insectes",0],
+["Quel insecte Shino Aburame contrôle-t-il ?","Des insectes destructeurs de chakra (kikaichu)","Des abeilles","Des papillons","Des scarabées de feu",0],
+["Quel animal Kiba Inuzuka a-t-il comme partenaire ?","Akamaru, un chien","Un faucon","Un chat","Un renard",0],
+["Quel surnom le village de Kiri (Brume) portait-il autrefois en raison de sa violence ?","Le Village du Sang","Le Village des Brumes Sanglantes","Le Village de la Terreur","Le Village Maudit",1],
+["Qui est le quatrième Mizukage devenu marionnette manipulée par Madara/Kabuto ?","Yagura","Mei Terumî","Ao","Chôjûrô",0],
+["Qui est la cinquième Mizukage ?","Mei Terumî","Yagura","Chôjûrô","Ao",0],
+["Qui dirige le village de Kumo (Nuage) en tant que Raikage durant la guerre ?","A (le Quatrième Raikage)","B","Darui","Le Troisième Raikage",0],
+["Quel démon est scellé en B (Killer Bee) ?","Hachibi (le Bœuf-Pieuvre à huit queues)","Kyûbi","Gobi","Nibi",0],
+["Qui dirige le village d'Iwa (Roche) ?","Ônoki, le Troisième Tsuchikage","A","Mei Terumî","Han",0],
+["Quelle organisation criminelle composée de ninjas déserteurs cherche à capturer les démons à queue ?","L'Akatsuki","Le Conseil des Cinq Ombres","Les Sept Épéistes","Racine (Ne)",0],
+["Qui dirige l'Akatsuki sous l'apparence de Pain ?","Nagato","Konan","Obito Uchiha","Madara Uchiha",0],
+["Quel œil légendaire possède Nagato ?","Le Rinnegan","Le Sharingan","Le Byakugan","Le Jôgan",0],
+["Qui est la partenaire de Nagato dans l'Akatsuki, maîtresse du papier ?","Konan","Konoe","Kurotsuchi","Karin",0],
+["Qui se fait passer pour Madara Uchiha pendant une grande partie de la série ?","Obito Uchiha","Kabuto Yakushi","Zetsu","Kakuzu",0],
+["Quel masque distinctif porte Obito sous l'identité de Tobi ?","Un masque orange en spirale","Un masque blanc à cornes","Un masque de renard","Un masque de squelette",0],
+["Qui est l'amour d'enfance perdu d'Obito ?","Rin Nohara","Kushina Uzumaki","Mikoto Uchiha","Konan",0],
+["Quel plan ultime Obito veut-il accomplir avec la Lune ?","Le plan Œil de la Lune (Tsuki no Me)","Détruire les cinq villages","Réveiller le Kyûbi","Ressusciter Madara définitivement",0],
+["Qui est l'Uchiha légendaire considéré comme le plus puissant de l'histoire ?","Madara Uchiha","Itachi Uchiha","Shisui Uchiha","Indra Uchiha",0],
+["Avec qui Madara Uchiha a-t-il fondé Konoha ?","Hashirama Senju","Tobirama Senju","Hiruzen Sarutobi","Mito Uzumaki",0],
+["Quel kekkei genkai unique Madara obtient-il en combinant Sharingan et pouvoir Senju ?","Le Rinnegan","Le Mokuton seul","Le Byakugan","Le Tenseigan",0],
+["Quel monstre Madara invoque-t-il, le dixième démon à queue ?","Le Jûbi","Le Kyûbi","Le Hachibi","Gedô Mazô seul",0],
+["Quel est le surnom du premier Hokage, Hashirama Senju ?","Le Dieu des Shinobi","Le Sage des Six Voies","Le Croc Blanc","L'Éclair Jaune",0],
+["Quel kekkei genkai unique possède Hashirama ?","Le Mokuton (élément Bois)","Le Sharingan","Le Byakugan","Le Rinnegan",0],
+["Qui est le deuxième Hokage, frère de Hashirama ?","Tobirama Senju","Hiruzen Sarutobi","Danzô Shimura","Minato Namikaze",0],
+["Quel clan Tobirama a-t-il fondé la police militaire de Konoha avec, à l'origine ?","Le clan Uchiha","Le clan Hyûga","Le clan Nara","Le clan Aburame",0],
+["Quelle figure mythique a divisé le pouvoir du Jûbi en neuf bijuu ?","Le Sage des Six Voies (Hagoromo)","Madara Uchiha","Hashirama Senju","Kaguya Ôtsutsuki",0],
+["Quelle déesse antique est à l'origine du chakra dans le monde de Naruto ?","Kaguya Ôtsutsuki","Konan","Shion","Mito Uzumaki",0],
+["Quels sont les deux fils du Sage des Six Voies ?","Indra et Ashura","Hashirama et Tobirama","Madara et Izuna","Naruto et Sasuke",0],
+["De quel fils du Sage Naruto est-il considéré comme la réincarnation ?","Ashura","Indra","Hamura","Hagoromo",0],
+["De quel fils du Sage Sasuke est-il considéré comme la réincarnation ?","Indra","Ashura","Hamura","Hagoromo",0],
+["Quel frère du Sage des Six Voies est associé au Byakugan et au clan Hyûga/Ôtsutsuki ?","Hamura","Indra","Ashura","Hagoromo",0],
+["Quelle technique interdite permet d'invoquer le Dieu de la Mort pour sceller une âme ?","Shiki Fûjin","Edo Tensei","Izanagi","Kotoamatsukami",0],
+["Quelle technique interdite ramène les morts à la vie sous le contrôle de l'invocateur ?","Edo Tensei","Shiki Fûjin","Henge no Jutsu","Kuchiyose",0],
+["Qui invente la technique Edo Tensei ?","Tobirama Senju","Orochimaru","Kabuto","Madara",0],
+["Qui perfectionne et utilise massivement l'Edo Tensei pendant la quatrième guerre ?","Kabuto Yakushi","Orochimaru","Sasori","Kakuzu",0],
+["Quelle marque maudite Orochimaru place-t-il sur Sasuke ?","Le sceau maudit du ciel","Le sceau du Kyûbi","Le sceau des cinq éléments","Le sceau de soumission",0],
+["Quel groupe Sasuke forme-t-il après avoir quitté Orochimaru ?","Hebi (puis Taka)","Akatsuki","Les Sept Épéistes","Racine",0],
+["Qui sont les membres originaux de l'équipe Taka de Sasuke ?","Sasuke, Sakura(non), Suigetsu, Jûgo, Karin","Sasuke, Naruto, Sakura, Kakashi","Sasuke, Itachi, Madara, Obito","Sasuke, Gaara, Kiba, Shino",3],
+["Quel membre de l'Akatsuki est un marionnettiste utilisant du poison ?","Sasori","Deidara","Kakuzu","Hidan",0],
+["Quel membre de l'Akatsuki utilise l'argile explosive ?","Deidara","Sasori","Itachi","Kisame",0],
+["Quel partenaire forme un duo avec Sasori dans l'Akatsuki ?","Deidara","Hidan","Kakuzu","Itachi",0],
+["Quel membre de l'Akatsuki est immortel grâce à un rituel sacrificiel ?","Hidan","Kakuzu","Zetsu","Konan",0],
+["Quel partenaire forme un duo avec Hidan ?","Kakuzu","Sasori","Itachi","Kisame",0],
+["Quel membre de l'Akatsuki peut arracher et voler des cœurs pour prolonger sa vie ?","Kakuzu","Hidan","Sasori","Zetsu",0],
+["Quel poisson-homme membre de l'Akatsuki est le partenaire d'Itachi ?","Kisame Hoshigaki","Kakuzu","Sasori","Zetsu",0],
+["Quelle épée légendaire manie Kisame ?","Samehada","Kubikiribôchô","Kiba","Nuibari",0],
+["Quel être végétal de l'Akatsuki peut se diviser en parties blanche et noire ?","Zetsu","Konan","Pain","Obito",0],
+["Quel est le véritable objectif d'Itachi en massacrant son clan, révélé plus tard ?","Protéger Konoha d'un coup d'État et préserver Sasuke","Venger son père","Prendre le pouvoir pour lui-même","Rejoindre Orochimaru",0],
+["Quelle organisation secrète de Konoha, dirigée par Danzô, est liée au massacre des Uchiha ?","Racine (Ne)","L'Akatsuki","Les Sept Épéistes","Le Conseil des Anciens seul",0],
+["Quel œil Danzô porte-t-il, volé à des Uchiha ?","Un Sharingan greffé sur son bras","Un Byakugan","Un Rinnegan","Un œil normal renforcé",0],
+["Qui tue Danzô Shimura ?","Sasuke Uchiha","Naruto Uzumaki","Itachi Uchiha","Kakashi Hatake",0],
+["Quel est le nom du village caché du Son fondé par Orochimaru ?","Otogakure","Amegakure","Takigakure","Yugakure",0],
+["Quel village caché est associé à la pluie et à l'Akatsuki originel ?","Amegakure (Village de la Pluie)","Otogakure","Kusagakure","Takigakure",0],
+["Qui est Konohamaru par rapport au Troisième Hokage ?","Son petit-fils","Son fils","Son neveu","Son frère",0],
+["Quelle technique perverse Naruto invente-t-il pour distraire ses adversaires ?","Le Sexy no Jutsu","Le Henge classique","Le Kage Bunshin","Le Rasengan",0],
+["Quel est le nom du chat fugueur que les genins doivent souvent attraper lors des missions D ?","Tora","Mike","Kuro","Shiro",0],
+["Quel examen permet aux genins de devenir chûnin ?","L'examen Chûnin","L'examen Jônin","L'examen Kage","Le Tournoi des Cinq Nations",0],
+["Lors de quel examen Chûnin Orochimaru attaque-t-il Konoha ?","Celui qui se termine par l'Invasion de Konoha","Le premier examen de Naruto seulement en partie écrite","Celui dirigé par Kakashi","Celui de la deuxième guerre",0],
+["Qui meurt lors de l'invasion de Konoha pendant l'examen Chûnin ?","Le Troisième Hokage, Hiruzen","Le Quatrième Hokage","Asuma Sarutobi","Jiraiya",0],
+["Quelle épreuve de l'examen Chûnin se déroule dans la Forêt de la Mort ?","La deuxième épreuve","La première épreuve","La troisième épreuve","La finale",0],
+["Quel surnom Temari porte-t-elle, liée à son élément ?","La maîtresse du vent","La princesse du sable","La reine de Suna","La gardienne du désert",0],
+["Quelle arme utilise Temari au combat ?","Un éventail géant","Des marionnettes","Des kunai empoisonnés","Un sabre",0],
+["Quelles marionnettes Kankurô manipule-t-il principalement ?","Karasu et Sanshôuo","Hiruko","Le Troisième Kazekage","Akamaru",0],
+["Qui forme Kankurô aux arts des marionnettes ?","Sasori (indirectement, via son art)","Chiyo directement comme maître","Ebizô seul","Personne",1],
+["Quel groupe Naruto et ses amis affrontent-ils dans la Guerre des Shinobi, dirigé par un masque ?","L'Alliance Shinobi contre l'Akatsuki/Obito et Madara","Le Conseil des Cinq Kages seul","Racine","Les Sept Épéistes",0],
+["Combien de grandes nations forment l'Alliance Shinobi durant la quatrième guerre ?","Cinq","Trois","Sept","Neuf",0],
+["Qui commande l'Alliance Shinobi sur le terrain en tant que général ?","Shikaku Nara (état-major) et le commandement de terrain par divers chefs","Naruto seul","Kakashi seul","Gaara seul",0],
+["Quel rôle Gaara occupe-t-il en tant que Kazekage pendant la guerre ?","Membre du commandement de l'Alliance avec les autres Kages","Simple soldat","Espion","Stratège uniquement à Suna",0],
+["Quelle technique Naruto développe-t-il en maîtrisant le chakra du Kyûbi avec son accord ?","Le Mode Chakra de Kyûbi (Bijû Mode)","Le Rinnegan","Le Byakugan","Le Sharingan",0],
+["Quel pouvoir Naruto obtient-il du Sage des Six Voies, sous forme de marques ?","Le Mode Sage des Six Voies","Le Mode Sennin des crapauds seulement","Le Rinnegan complet","Le Mokuton",0],
+["Quelle arme céleste Sasuke reçoit-il aussi du Sage des Six Voies ?","Une épée et un pouvoir lié à Susanoo amélioré","Un éventail","Un bâton","Un bouclier",0],
+["Quel pouvoir d'invisibilité/téléportation Kakashi développe-t-il en copiant un Uchiha légendaire ?","Le Kamui","Le Hiraishin","Le Susanoo","L'Amaterasu",0],
+["Quelle technique permet à Itachi de brûler tout ce qu'il regarde par des flammes noires ?","Amaterasu","Tsukuyomi","Susanoo","Izanami",0],
+["Quel genjutsu redoutable d'Itachi plonge la victime dans une illusion de torture prolongée en un instant ?","Tsukuyomi","Amaterasu","Izanami","Kotoamatsukami",0],
+["Quelle armure spectrale les utilisateurs avancés du Mangekyô Sharingan peuvent invoquer ?","Susanoo","Edo Tensei","Kotoamatsukami","Rinnegan",0],
+["Quel prix terrible le Mangekyô Sharingan normal impose-t-il à son porteur à terme ?","La cécité progressive","La mort immédiate","La perte de chakra totale","La folie immédiate",0],
+["Quelle solution les frères Uchiha utilisent-ils historiquement pour éviter la cécité du Mangekyô ?","Échanger un œil avec un frère pour obtenir l'Éternel Mangekyô Sharingan","Aucune solution n'existe","Sceller leurs yeux","Utiliser du chakra de bijû",0],
+["Quel œil Sasuke obtient-il de son frère après la mort d'Itachi ?","L'œil d'Itachi, complétant son Éternel Mangekyô","L'œil de Madara","L'œil de Shisui directement implanté","Aucun",0],
+["Quel Uchiha légendaire possède un Sharingan capable de contrôler l'esprit des autres temporairement, le Kotoamatsukami ?","Shisui Uchiha","Itachi Uchiha","Obito Uchiha","Indra Uchiha",0],
+["Comment Danzô a-t-il obtenu son œil de Sharingan greffé, lié à Shisui ?","Il l'a pris après la mort suspecte de Shisui","Il l'a acheté à Orochimaru","Itachi le lui a donné volontairement","Il est né avec",0],
+["Quel personnage ressuscite Hashirama et Tobirama lors de la guerre via Edo Tensei ?","Kabuto Yakushi","Orochimaru","Madara Uchiha","Obito Uchiha",0],
+["Qui finit par ressusciter réellement Madara avec les cellules de Hashirama et le Rinnegan ?","Kabuto, puis Madara s'éveille pleinement","Obito directement","Orochimaru","Zetsu seul",0],
+["Quel être maléfique originel Kaguya Ôtsutsuki tente-t-elle de libérer/incarner à la fin de la série ?","Elle-même, en tant que mère du chakra","Le Jûbi seul","Indra réincarné","Un dixième bijû différent",0],
+["D'où vient réellement Kaguya Ôtsutsuki selon le manga ?","D'une autre planète, arrivée pour récolter le Fruit de l'Arbre Divin","Elle est née à Konoha","Elle est la sœur d'Hagoromo seulement par le sang terrestre","Elle est une invention d'Orochimaru",0],
+["Quel arbre légendaire Kaguya consomme pour obtenir le chakra originel ?","L'Arbre Divin (Shinju)","L'Arbre du Sage","L'Arbre de Konoha","L'Arbre Senju",0],
+["Qui aide finalement à sceller Kaguya avec Naruto et Sasuke ?","Sakura, Obito et Hagoromo également présents en esprit","Personne d'autre","Kakashi seul","Gaara seul",0],
+["Quelle technique combinée Naruto et Sasuke utilisent-ils pour vaincre Kaguya ?","Une attaque conjointe combinant leurs pouvoirs de bijû et de Rinnegan/Sharingan","Le Rasengan seul","Le Chidori seul","Le Kage Bunshin massif",0],
+["Quel sacrifice fait Obito à la fin de sa rédemption pendant la guerre ?","Il donne son œil restant et son chakra à Naruto, puis meurt en sauvant Kakashi","Il fusionne avec Kaguya","Il devient Hokage","Il s'enfuit",0],
+["Quel surnom porte le groupe des sept ninjas épéistes du Village de la Brume ?","Les Sept Épéistes de la Brume","Les Sept Sabres Sacrés","Les Lames de Kiri","Les Maîtres du Brouillard",0],
+["Quelle épée légendaire absorbe le chakra de ses adversaires ?","Samehada","Kubikiribôchô","Nuibari","Shibuki",0],
+["Quel jeune ninja de Kiri, ami d'enfance de Naruto, manie une épée légendaire et devient Mizukage adjoint ?","Chôjûrô","Ao","Utakata","Yagura",0],
+["Quel jinchûriki du Rokubi (Sanbi en fait, tortue) est mentionné dans la série ?","Le Sanbi est sans jinchûriki fixe la plupart du temps, lié à Yagura plus jeune","Utakata","Han","Roshi",0],
+["Quel jinchûriki contrôle le Gobi (cinq queues), tortue-cheval ?","Han","Utakata","Roshi","Fû",0],
+["Quel jinchûriki contrôle le Yonbi (quatre queues), singe de lave ?","Roshi","Han","Fû","Utakata",0],
+["Quel jinchûriki féminin contrôle le Nanabi (sept queues), insecte ?","Fû","Yugito","Mei Terumî","Karin",0],
+["Quel jinchûriki contrôle le Nibi (deux queues), chat de feu ?","Yugito Nii","Fû","Han","Utakata",0],
+["Quel jinchûriki contrôle le Rokubi (six queues), limace ?","Utakata","Han","Roshi","Yagura",0],
+["Quel est le nom du dixième bijû formé par la fusion de tous les autres ?","Le Jûbi","Le Kyûbi ultime","Le Bijuu Suprême","Le Gedô",0],
+["Quelle statue sert de réceptacle pour collecter le chakra des bijû capturés par l'Akatsuki ?","Le Gedô Mazô (Statue du Démon Extérieur)","Le Susanoo géant","La Statue de Madara","L'Autel de Rinne",0],
+["Quel village est détruit par Pain lors de son attaque la plus marquante ?","Konoha","Suna","Kiri","Iwa",0],
+["Quel pouvoir du Rinnegan permet à Pain de ramener les morts à la vie en sacrifiant sa propre vie ?","Le Chemin Extérieur (Outer Path - Ningendô/ressurection)","Le Chemin Animal","Le Chemin Préta","Le Chemin Asura",0],
+["Combien de corps (chemins) Pain utilise-t-il simultanément, contrôlés par Nagato ?","Six","Trois","Neuf","Cinq",0],
+["Qui convainc Nagato/Pain de changer de voie juste avant sa mort ?","Naruto Uzumaki","Konan","Jiraiya (indirectement par ses paroles passées)","Tsunade",0],
+["Quel village Nagato, Yahiko et Konan ont-ils fondé ensemble dans leur jeunesse, avant l'Akatsuki actuelle ?","Ils ont dirigé Amegakure ensemble","Otogakure","Konoha","Kusagakure",2],
+["Qui est Yahiko, leader originel du vrai Akatsuki pacifiste ?","Un ami d'enfance de Nagato et Konan, mort et dont le corps devient un Pain","Le frère de Nagato","Le sensei de Jiraiya","Un Hokage déchu",0],
+["Quelle famille legendaire de Kumo possède un kekkei genkai de transformation en lave ?","Le clan ne possède pas de lave; c'est Roshi (Iwa) qui a la lave, lié au Yonbi","Le clan Yotsuki à Kumo (foudre/queue de bœuf)","Le clan Hyûga","Le clan Senju",1],
+["Quel clan de Kumo est lié à Killer Bee et au Raikage A ?","Le clan Yotsuki","Le clan Uzumaki","Le clan Nara","Le clan Uchiha",0],
+["Quelle technique signature utilise le Quatrième Raikage A ?","Le Manteau de Foudre (Raiton armure)","Le Rasengan","Le Chidori","Le Mokuton",0],
+["Quel ninja de Kumo manie l'épée Kiba générant la foudre ?","Darui","Killer Bee","Omoi","C",0],
+["Quelle technique B (Killer Bee) utilise-t-il en combinant taijutsu et plusieurs épées ?","Le style des sept épées (Lariat et armes multiples)","Le Rasengan","Le Susanoo","Le Byakugan",0],
+["Quel personnage est le mentor de B et a influencé son contrôle du Hachibi ?","Le Troisième Raikage (indirectement) et sa propre détermination","Jiraiya","Orochimaru","Tobirama",0],
+["Quel village est connu pour son climat rocheux et son Tsuchikage de petite taille mais puissant ?","Iwagakure (Village de la Roche)","Kumogakure","Kirigakure","Sunagakure",0],
+["Quel élément le Troisième Tsuchikage Ônoki maîtrise-t-il, lui donnant une grande mobilité ?","Le Jiton (élément de la Poussière/gravité)","Le Mokuton","Le Hyôton","Le Bakuton",0],
+["Quelle petite-fille d'Ônoki devient une kunoichi notable d'Iwa ?","Kurotsuchi","Karin","Konan","Kin",0],
+["Quel personnage utilise le Bakuton (élément Explosion) à Iwa ?","Han (en partie) et c'est surtout associé à lui via la lave/explosion","Deidara uniquement par argile, Han par lave-explosion combinée","Roshi seul","Aucun",1],
+["Quel village discret est connu pour ses chutes d'eau et son ancien jinchûriki pacifique Utakata ?","Takigakure (Village de la Cascade)","Yugakure","Kusagakure","Amegakure",0],
+["Quel village est associé aux sources chaudes et apparaît dans un film/arc lié à Shion ?","Yugakure (Village des Sources Chaudes)","Takigakure","Kusagakure","Tanzaku",0],
+["Quelle prêtresse capable de prédire la mort apparaît dans un film Naruto et s'attache à Naruto ?","Shion","Konan","Mei Terumî","Fû",0],
+["Quel renard légendaire enseigne le contrôle du chakra naturel (Sennin) à Naruto, avec les crapauds ?","Fukasaku et Shima (crapauds du Mont Myôboku)","Gamabunta seul","Les renards de Mont Kitsune","Aucun, c'est inventé",0],
+["Quel grand crapaud Naruto invoque-t-il, allié de Jiraiya et Minato également ?","Gamabunta","Gamakichi","Gamatatsu","Fukasaku",0],
+["Quel petit crapaud, fils de Gamabunta, devient le familier régulier de Naruto ?","Gamakichi","Gamatatsu","Gamaken","Gamahiro",0],
+["Quel animal Tsunade invoque-t-elle, lié à son clan adoptif de techniques médicales ?","Les limaces, notamment Katsuyu","Les serpents","Les crapauds","Les tigres",0],
+["Quelle immense limace, alliée de Tsunade, aide à soigner massivement l'armée pendant la guerre ?","Katsuyu","Manda","Gamabunta","Enma",0],
+["Quel singe légendaire, roi des singes, est lié au Troisième Hokage ?","Enma","Gamabunta","Katsuyu","Manda",0],
+["Quel énorme serpent Orochimaru invoque-t-il fréquemment ?","Manda","Aoda","Katsuyu","Enma",0],
+["Quel serpent Sasuke invoque-t-il après avoir développé sa propre signature ?","Aoda","Manda","Katsuyu","Gamabunta",0],
+["Quel pouvoir spécifique distingue le clan Uzumaki, en plus de leurs cheveux roux fréquents ?","Une vitalité et une réserve de chakra exceptionnelles, et la maîtrise des sceaux (fûinjutsu)","Le contrôle du sable","Le Byakugan","Le Mokuton",0],
+["Quel village originel le clan Uzumaki dirigeait-il avant sa destruction ?","Uzushiogakure (Village du Tourbillon)","Konohagakure","Takigakure","Amegakure",0],
+["Quelle technique de sceau Kushina utilise-t-elle pour retenir le Kyûbi avant sa mort ?","Une chaîne de chakra (Adamantine Sealing Chains)","Le Edo Tensei","Le Shiki Fûjin seul","Le Hiraishin",0],
+["Quel rôle Mito Uzumaki, épouse de Hashirama, a-t-elle joué pour le village ?","Première jinchûriki du Kyûbi à Konoha","Première Hokage","Fondatrice du clan Senju","Aucun rôle notable",0],
+["Quel village affronte directement Konoha lors de la Seconde Guerre Shinobi, impliquant Kakashi jeune ?","Kirigakure notamment, dans un contexte multi-villages","Suna seul","Iwa seul","Kumo seul",0],
+["Quelle organisation de Konoha, dissoute officiellement, continue secrètement sous Danzô ?","Racine (Ne), une branche de l'ANBU","Les Sept Épéistes","L'Akatsuki originel","Le Conseil des Cinq Kages",0],
+["Quel rôle Sai joue-t-il initialement, infiltré dans l'équipe de Naruto ?","Un espion de Racine chargé de surveiller/éliminer Sasuke si besoin","Un allié de Suna","Un membre de l'Akatsuki","Un ninja médical seul",0],
+["Quelle technique signature Sai utilise-t-il, liée au dessin ?","Le Ninpô: Chôjû Giga (animaux d'encre vivants)","Le Rasengan","Le Byakugan","Le Mokuton",0],
+["Quel frère de Sai, mort jeune, influence profondément son passé ?","Shin (selon certaines versions/anime)","Itachi","Obito","Aucun frère mentionné",0],
+["Quelle relation Sai entretient-il avec Ino par la suite dans la série/Boruto ?","Ils se marient et ont un fils, Inojin","Ils restent simples coéquipiers","Ils deviennent rivaux","Aucune relation",0],
+["Quel est le nom du fils de Naruto et Hinata, héros de la suite Boruto ?","Boruto Uzumaki","Himawari","Inojin","Shikadai",0],
+["Quelle est la fille de Naruto et Hinata ?","Himawari Uzumaki","Boruto","Sarada","Chôchô",0],
+["Quel est le nom de la fille de Sasuke et Sakura ?","Sarada Uchiha","Himawari","Chôchô","Mirai",0],
+["Quel poste Naruto occupe-t-il à l'âge adulte, accomplissant son rêve d'enfance ?","Hokage (le Septième)","Conseiller","Jônin instructeur seul","Kazekage",0],
+["Quel surnom porte Naruto une fois devenu Hokage, en référence à son parcours ?","Le Héros qui a sauvé le monde shinobi","Le Sage Pervers","Le Croc Blanc","L'Ombre de Konoha",0],
+[]
+];
+// remove trailing empty placeholder if present
+while(QUESTIONS.length && QUESTIONS[QUESTIONS.length-1].length===0){ QUESTIONS.pop(); }
+
+const TOTAL_Q = 15;
+const PASS_SCORE = 9;
+
+let pool = [];
+let current = 0;
+let correctCount = 0;
+let locked = false;
+
+const introEl = document.getElementById('intro');
+const gameEl = document.getElementById('game');
+const resultEl = document.getElementById('result');
+const startBtn = document.getElementById('startBtn');
+const retryBtn = document.getElementById('retryBtn');
+const qtextEl = document.getElementById('qtext');
+const optionsEl = document.getElementById('options');
+const feedbackEl = document.getElementById('feedback');
+const qIndexEl = document.getElementById('qIndex');
+const scorePillEl = document.getElementById('scorePill');
+const progressFill = document.getElementById('progressFill');
+const rankBadge = document.getElementById('rankBadge');
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startGame(){
+  pool = shuffle(QUESTIONS).slice(0, TOTAL_Q);
+  current = 0;
+  correctCount = 0;
+  introEl.classList.add('hidden');
+  resultEl.classList.add('hidden');
+  gameEl.classList.remove('hidden');
+  rankBadge.textContent = 'Examen en cours';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  locked = false;
+  feedbackEl.textContent = '';
+  const q = pool[current];
+  const [text, a, b, c, d, correctIdx] = q;
+  qtextEl.textContent = text;
+  qIndexEl.textContent = `Question ${current+1} / ${TOTAL_Q}`;
+  scorePillEl.textContent = `Score : ${correctCount}`;
+  progressFill.style.width = `${(current/TOTAL_Q)*100}%`;
+
+  const choices = [a,b,c,d].map((label, idx) => ({label, idx}));
+  optionsEl.innerHTML = '';
+  choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.type = 'button';
+    btn.textContent = choice.label;
+    btn.addEventListener('click', () => handleAnswer(choice.idx, correctIdx, btn));
+    optionsEl.appendChild(btn);
+  });
+}
+
+function handleAnswer(chosenIdx, correctIdx, btnEl){
+  if(locked) return;
+  locked = true;
+  const buttons = optionsEl.querySelectorAll('.opt');
+  buttons.forEach(b => b.setAttribute('disabled','true'));
+
+  if(chosenIdx === correctIdx){
+    correctCount++;
+    btnEl.classList.add('correct');
+    feedbackEl.textContent = 'Exact. Bien joué, shinobi.';
+  } else {
+    btnEl.classList.add('wrong');
+    buttons[correctIdx].classList.add('correct');
+    feedbackEl.textContent = 'Raté. La bonne réponse est surlignée.';
+  }
+  scorePillEl.textContent = `Score : ${correctCount}`;
+
+  setTimeout(() => {
+    current++;
+    if(current >= TOTAL_Q){
+      showResult();
+    } else {
+      renderQuestion();
+    }
+  }, 900);
+}
+
+function showResult(){
+  gameEl.classList.add('hidden');
+  resultEl.classList.remove('hidden');
+  document.getElementById('finalCorrect').textContent = correctCount;
+  document.getElementById('finalTotal').textContent = TOTAL_Q;
+  progressFill.style.width = '100%';
+
+  const badge = document.getElementById('resultBadge');
+  const title = document.getElementById('resultTitle');
+  const tagline = document.getElementById('resultTagline');
+  resultEl.classList.remove('win','lose');
+
+  if(correctCount >= PASS_SCORE){
+    resultEl.classList.add('win');
+    badge.textContent = '🏅';
+    title.textContent = 'Épreuve réussie';
+    tagline.textContent = `${correctCount} bonnes réponses sur ${TOTAL_Q}. Le Conseil valide ton grade.`;
+    rankBadge.textContent = 'Chûnin';
+  } else {
+    resultEl.classList.add('lose');
+    badge.textContent = '🍃';
+    title.textContent = 'Épreuve échouée';
+    tagline.textContent = `${correctCount} bonnes réponses sur ${TOTAL_Q}. Il faut au moins ${PASS_SCORE} pour réussir.`;
+    rankBadge.textContent = 'Genin';
+  }
+}
+
+startBtn.addEventListener('click', startGame);
+retryBtn.addEventListener('click', () => {
+  resultEl.classList.add('hidden');
+  introEl.classList.remove('hidden');
+  rankBadge.textContent = 'Genin';
+});
+</script>
+</body>
+</html>
